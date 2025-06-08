@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Visualisasi Lemari 3D</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 90vw;
+            max-width: 1000px;
+            height: 90vh;
+            box-sizing: border-box;
+        }
+
+        #plot-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #loading-message {
+            margin-top: 10px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="plot-container"></div>
+        <div id="loading-message">Memuat Pyodide, Python, dan Plotly... Mohon tunggu.</div>
+    </div>
+    <script type="text/javascript">
+        async function runPython() {
+            const loadingMessage = document.getElementById('loading-message');
+            try {
+                loadingMessage.innerText = "Memuat Pyodide...";
+                let pyodide = await loadPyodide();
+
+                loadingMessage.innerText = "Memuat micropip...";
+                await pyodide.loadPackage("micropip");
+                const micropip = pyodide.pyimport("micropip");
+
+                loadingMessage.innerText = "Menginstal numpy & plotly...";
+                await micropip.install(['numpy', 'plotly']);
+
+                loadingMessage.innerText = "Mengambil kode Python...";
+                
+                const pythonCode = await fetch("main.py").then(response => response.text());
+
+                loadingMessage.innerText = "Menjalankan skrip Python...";
+                await pyodide.runPythonAsync(pythonCode);
+
+                loadingMessage.innerText = "Mengambil data plot...";
+                let get_plot_json = pyodide.globals.get('get_plot_json');
+                let plotJsonString = get_plot_json();
+                get_plot_json.destroy && get_plot_json.destroy();
+
+                let plotObject = JSON.parse(plotJsonString);
+
+                loadingMessage.innerText = "Merender plot...";
+                Plotly.newPlot('plot-container', plotObject.data, plotObject.layout);
+
+                loadingMessage.innerText = "Selesai!";
+                loadingMessage.style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal menjalankan skrip Python atau merender Plotly:", error);
+                loadingMessage.innerText = "Error: " + error.message;
+                loadingMessage.style.color = 'red';
+            }
+        }
+        runPython();
+    </script>
+</body>
+
+</html>
