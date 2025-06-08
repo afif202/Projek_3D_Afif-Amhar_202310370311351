@@ -2,7 +2,7 @@
 
 Proyek ini mendemonstrasikan cara membuat, mentransformasi, dan memvisualisasikan model lemari 3D menggunakan Python dengan library `numpy` dan `plotly`. Model ini kemudian dirender secara interaktif di browser web menggunakan Pyodide, yang memungkinkan eksekusi kode Python langsung di front-end.
 
-![Contoh Tampilan Lemari 3D](assets/tampilan-lemari.png)
+![Contoh Tampilan Lemari 3D](assets/Lemari3D.png)
 
 ## 📂 Struktur File
 
